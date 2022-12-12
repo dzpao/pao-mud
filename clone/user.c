@@ -39,7 +39,7 @@ int fb(string args) {
     int fd, ret;
 
     write( "即将进入副本……\n" );
-    fd = socket_create(1, "on_backend_output", "on_backend_close");
+    fd = socket_create(3, "on_backend_output", "on_backend_close");
     ret = socket_connect(fd, "127.0.0.1 8000", "on_backend_output", "on_backend_close");
     if (ret < 0) {
         write( "进入副本失败……\n" );
@@ -69,6 +69,7 @@ int set_binary() {
     write_buffer(buf2, 0, 0xfffb0000);
     write_buffer(buf, 0, read_buffer(buf1, 0, 3));
     write_buffer(buf, 3, read_buffer(buf2, 0, 3));
+
     socket_write(FB, buf);
 }
 
@@ -77,7 +78,7 @@ int binary;
 void on_backend_output(int fd, mixed message) {
     string msg;
 
-    msg = (string)message;
+    msg = read_buffer(message, 0, 0);
 
     if (binary != 1) {
         set_binary();
