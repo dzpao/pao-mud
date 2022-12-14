@@ -54,6 +54,10 @@ int fb(string args) {
 
     add_action("all_cmds", "", 2);
 
+    write("> ");
+    telnet_ga();
+    prompt_off();
+
     FB = fd;
 
     return 1;
@@ -107,6 +111,7 @@ void on_backend_send(int fd)    {}
 void on_backend_close(int fd) {
     tell_object(this_object(), "已经离开副本。\n");
     remove_action("all_cmds", "");
+    prompt_on();
     binary = 0;
 }
 
@@ -129,6 +134,11 @@ int all_cmds(string cmd) {
     }
     else {
         write("命令转发出错: \e[1;31m" + cmd + "\e[0m\n");
+    }
+
+    if (cmd == "exit") {
+        write("即将离开副本。\n");
+        prompt_on();
     }
 
     return 1;
