@@ -59,8 +59,10 @@ int fb(string args) {
     return 1;
 }
 
+string GA;
+
 int set_binary() {
-    buffer buf1, buf2, buf;
+    buffer buf1, buf2, buf, ga;
 
     buf1 = allocate_buffer(4);
     buf2 = allocate_buffer(4);
@@ -71,21 +73,33 @@ int set_binary() {
     write_buffer(buf, 3, read_buffer(buf2, 0, 3));
 
     socket_write(FB, buf);
+
+    ga = allocate_buffer(4);
+    write_buffer(ga, 0, 0xfff90000);
+    GA = read_buffer(ga, 0, 2);
 }
 
 int binary;
 
 void on_backend_output(int fd, mixed message) {
     string msg;
-
-    msg = read_buffer(message, 0, 0);
+    string ga;
 
     if (binary != 1) {
         set_binary();
         binary = 1;
     }
 
-    tell_object(this_object(), "副本内容:\n" + msg + "\n");
+    ga = read_buffer(message, -2, 0);
+    if (ga == GA) {
+        msg = read_buffer(message, 0, sizeof(message)-2);
+        tell_object(this_object(), "副本内容:\n" + msg);
+        telnet_ga();
+    }
+    else {
+        msg = read_buffer(message, 0, 0);
+        tell_object(this_object(), "副本内容:\n" + msg);
+    }
 }
 
 void on_backend_send(int fd)    {}
